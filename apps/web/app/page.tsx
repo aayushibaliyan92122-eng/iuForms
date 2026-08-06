@@ -31,7 +31,7 @@ export default function Home() {
           href="/"
           className="text-lg font-semibold tracking-tight"
         >
-          UvForm
+          IuForms
         </Link>
 
         <Link
@@ -123,7 +123,7 @@ export default function Home() {
       </section>
 
       <footer className="pb-8 text-center text-xs text-white/25">
-        Built with UvForm
+        Built with IuForms
       </footer>
 
     </main>

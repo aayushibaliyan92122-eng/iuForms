@@ -1,6 +1,8 @@
-import { pgTable, uuid, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, varchar, pgEnum } from "drizzle-orm/pg-core";
 import { userTable } from "./user";
-import { date } from "zod";
+
+
+export const formStatusEnum = pgEnum("forms_status_enum" , ["DRAFT" , "PUBLISHED"])
 
 export const formsTable = pgTable("forms", {
   id:uuid().primaryKey().defaultRandom(),
@@ -9,5 +11,6 @@ export const formsTable = pgTable("forms", {
   createdBy : uuid("created_By").references(()=> userTable.id),
 
   createdAt : timestamp("created_At").defaultNow(),
-  updatedAt: timestamp("updated_At").$onUpdate(()=> new Date())
+  updatedAt: timestamp("updated_At").$onUpdate(()=> new Date()),
+  status : formStatusEnum("form_status").default("DRAFT").notNull()
 });

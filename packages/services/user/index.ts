@@ -9,7 +9,8 @@ import {
   generateUserTokenPayload,
   GenerateUserTokenPayloadType,
   signInUserWithEmailAndPassword,
-  SignInUserWithEmailAndPasswordType
+  SignInUserWithEmailAndPasswordType,
+  
 } from "./model";
 import * as JWT from "jsonwebtoken";
 import { env } from "../env";
@@ -105,7 +106,12 @@ export default class UserService {
   
   public async getLoggedInUserInfo(id:string){
         const user = await  db
-                          .select({id: userTable.id , fullName : userTable.fullName ,email: userTable.email})
+                          .select({
+                            id: userTable.id,
+                            fullName: userTable.fullName,
+                            email: userTable.email,
+                            createdAt: userTable.createdAt,
+                          })
                           .from(userTable)
                           .where(eq( userTable.id , id))
 
@@ -113,7 +119,8 @@ export default class UserService {
         throw new Error("user with this id does not exist.")
       }
 
-     
       return user[0]!
   }
+
+ 
 }

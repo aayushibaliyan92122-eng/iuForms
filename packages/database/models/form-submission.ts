@@ -11,7 +11,9 @@ export type FormSubmissionValueRow = FormSubmissionValue[]
 
 export const formSubmissionTable = pgTable("form_submissions" ,{
     id: uuid().primaryKey().defaultRandom(),
-    formId : uuid("form_id").references(()=> formsTable.id),
+    formId : uuid("form_id").references(()=> formsTable.id ,{
+  onDelete: "cascade",
+}),
     values : json("values").$type<FormSubmissionValueRow>().notNull(),
     createdAt : timestamp("created_at").defaultNow(),
     updatedAt : timestamp("updated_at").$onUpdate(()=> new Date())

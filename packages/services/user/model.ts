@@ -32,3 +32,9 @@ export const signInUserWithEmailAndPassword = z.object(
 
 
 export type SignInUserWithEmailAndPasswordType = z.infer< typeof signInUserWithEmailAndPassword>
+
+export const logoutUser = z.object({
+    userId : z.string().describe("the id of the user signIn")
+})
+
+export type LogoutUserType = z.infer<typeof logoutUser>

@@ -9,5 +9,6 @@ export function getCookie(req:Request , name:string):string | undefined{
 }
 
 export function clearCookie(res: Response, name:string){
-    res.clearCookie(name)
+    // ensure the clear uses the same attributes as when the cookie was set
+    res.clearCookie(name, { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
 }

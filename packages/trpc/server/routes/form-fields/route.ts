@@ -6,7 +6,13 @@ import {
          createFieldOutputModel,
          createFieldInputModel,
          getFieldsInputModel,
-         getFieldsOutputModel
+         getFieldsOutputModel,
+         updateFieldInput,
+         UpdateFieldInputType,
+         updateFieldOutput,
+         deleteFieldInput,
+         deleteFieldOutput
+         
         
 
  } from "./model"
@@ -65,7 +71,50 @@ import {
 
                             return result
                         }
-                    )
+                    ),
+
+                    updateField: authenticatedProcedure
+  .meta({
+    openapi: {
+      method: "PATCH",
+      tags: TAGS,
+      path: getPath("/updateField"),
+      protect: true,
+    },
+  })
+  .input(updateFieldInput)
+  .output(updateFieldOutput)
+  .mutation(async ({ input, ctx }) => {
+    const result = await formFieldService.updateFormField(input, ctx.user.id);
+
+    if (!result) throw new Error("Failed to update form field");
+
+    return {
+      ...result,
+      // ensure non-nullable fields expected by the output model
+      formId: result.formId ?? (input as any).formId ?? "",
+      createdAt: result.createdAt ?? new Date(),
+      updatedAt: result.updatedAt ?? new Date(),
+    };
+  }),
+
+
+deleteField: authenticatedProcedure
+  .meta({
+    openapi: {
+      method: "DELETE",
+      path: getPath("/deleteField"),
+      tags: TAGS,
+    },
+  })
+  .input(deleteFieldInput)
+  .output(deleteFieldOutput)
+  .mutation(async ({ input, ctx }) => {
+    return await formFieldService.deleteFormField(
+      input,
+      ctx.user?.id
+    );
+  }),
  })
 
  

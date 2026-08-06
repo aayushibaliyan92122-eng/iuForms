@@ -12,8 +12,10 @@ import {
     getLoggedInUserInfoInputModel,
     getLoggedInUserInfoOutputModel,
     signInUserWithEmailAndPasswordInputModel,
-    signInUserWithEmailAndPasswordOutputModel
-}from "./model"
+    signInUserWithEmailAndPasswordOutputModel,
+    signOutUserInputModel,
+    signOutUserOutputModel,
+} from "./model"
 
 import { userService } from "../../services"
 
@@ -96,15 +98,32 @@ export const authRouter = router(
                 .query(
                     async ({ctx}) => {
 
-                        const {id,fullName, email } = await userService.getLoggedInUserInfo(ctx.user.id)
+                                const {id,fullName, email, createdAt } = await userService.getLoggedInUserInfo(ctx.user.id)
 
-                        
-                        return{
-                            id,
-                           fullName,
-                           email
-                        }
-                   
-                })
-    })
+                                
+                                return{
+                                    id,
+                                   fullName,
+                                   email,
+                                   createdAt: createdAt ? createdAt.toISOString() : null,
+                                }
+                           
+                        }),
+
+        signOutUser: publicProcedure
+            .meta({
+                openapi: {
+                    method: "POST",
+                    tags: TAGS,
+                    path: getPath("/signOutUser"),
+                },
+            })
+            .input(signOutUserInputModel)
+            .output(signOutUserOutputModel)
+            .mutation(async ({ ctx }) => {
+                ctx.clearCookie("token");
+                return { success: true };
+            }),
+    }
+);
 

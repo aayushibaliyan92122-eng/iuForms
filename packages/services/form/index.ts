@@ -1,9 +1,11 @@
-import {db,eq} from "@repo/database"
-import {formsTable} from "@repo/database/models/form"
-
-import {createFormInput,CreateFormInputType,listFormByUserIdInput, ListFormByUserIdInputType} from "./model"
+import { db, eq, count, countDistinct, desc ,and } from "@repo/database";
+import { formsTable } from "@repo/database/models/form";
 import { fieldTypeEnum, formFieldsTable } from "@repo/database/models/form-fields";
+import { formSubmissionTable } from "@repo/database/models/form-submission";
+
+import { createFormInput, CreateFormInputType, listFormByUserIdInput, ListFormByUserIdInputType, UpdateFormInputType, updateFormInput,deleteFormInput,DeleteFormInputType } from "./model";
 import { formatError } from "zod";
+import { userTable } from "@repo/database/models/user";
 
 
 export default class FormService{
@@ -50,11 +52,68 @@ export default class FormService{
         .from(formsTable)
         .where(eq(formsTable.createdBy , userId))
 
-
-        return{forms}
-
-      
+      return{forms}
    }
+
+   public async getDashboardStats(userId: string) {
+      const totalFormsRow = await db
+        .select({ totalForms: count() })
+        .from(formsTable)
+        .where(eq(formsTable.createdBy, userId));
+
+      const totalFieldsRow = await db
+        .select({ totalFields: count() })
+        .from(formFieldsTable)
+        .leftJoin(formsTable, eq(formFieldsTable.formId, formsTable.id))
+        .where(eq(formsTable.createdBy, userId));
+
+      const totalResponsesRow = await db
+        .select({ totalResponses: count() })
+        .from(formSubmissionTable)
+        .leftJoin(formsTable, eq(formSubmissionTable.formId, formsTable.id))
+        .where(eq(formsTable.createdBy, userId));
+
+      return {
+        totalForms: Number(totalFormsRow[0]?.totalForms ?? 0),
+        totalFields: Number(totalFieldsRow[0]?.totalFields ?? 0),
+        totalResponses: Number(totalResponsesRow[0]?.totalResponses ?? 0),
+      };
+    }
+
+    public async listFormsWithCountsByUserId(userId: string) {
+      const rows = await db
+        .select({
+          id: formsTable.id,
+          title: formsTable.title,
+          description: formsTable.description,
+          createdAt: formsTable.createdAt,
+          updatedAt: formsTable.updatedAt,
+          responseCount: countDistinct(formSubmissionTable.id),
+          fieldCount: countDistinct(formFieldsTable.id),
+        })
+        .from(formsTable)
+        .leftJoin(formFieldsTable, eq(formFieldsTable.formId, formsTable.id))
+        .leftJoin(formSubmissionTable, eq(formSubmissionTable.formId, formsTable.id))
+        .where(eq(formsTable.createdBy, userId))
+        .groupBy(
+          formsTable.id,
+          formsTable.title,
+          formsTable.description,
+          formsTable.createdAt,
+          formsTable.updatedAt,
+        )
+        .orderBy(desc(formsTable.updatedAt));
+
+      return rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description ?? null,
+        createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+        updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
+        responseCount: Number(row.responseCount ?? 0),
+        fieldCount: Number(row.fieldCount ?? 0),
+      }));
+    }
 
   
    public async getFormWithFields(formId: string) {
@@ -122,5 +181,121 @@ export default class FormService{
 
         return form;
     }
+
+public async updateForms(
+  payload: UpdateFormInputType,
+  userId: string
+) {
+  // Validate the request and extract its values
+  const {
+    title,
+    description,
+    formId,
+  } = await updateFormInput.parseAsync(payload);
+
+  // Find the exact form and verify that it belongs to the logged-in user
+  const verifiedForms = await db
+    .select({
+      formId: formsTable.id,
+      description: formsTable.description,
+      title: formsTable.title,
+    })
+    .from(formsTable)
+    .where(
+      and(
+        eq(formsTable.id, formId),
+        eq(formsTable.createdBy, userId)
+      )
+    );
+
+  // Empty array means the form either does not exist
+  // or does not belong to this user
+  if (verifiedForms.length === 0) {
+    throw new Error(
+      "Form not found or you are not authorized to update it"
+    );
+  }
+
+  const currentForm = verifiedForms[0];
+
+  type FormUpdates = Omit<UpdateFormInputType, "formId">;
+
+  const updates: FormUpdates = {};
+
+  // Only add description when the client provided it
+  // and it differs from the stored value
+  if (
+    description !== undefined &&
+    description !== currentForm?.description
+  ) {
+    updates.description = description;
+  }
+
+  // Only add title when it actually changed
+  if (
+    title !== undefined &&
+    title !== currentForm?.title
+  ) {
+    updates.title = title;
+  }
+
+  // The request contained editable fields,
+  // but their values were identical to the existing values
+  if (Object.keys(updates).length === 0) {
+    throw new Error("No changes detected");
+  }
+
+  // Update the exact verified form
+  const result = await db
+    .update(formsTable)
+    .set(updates)
+    .where(eq(formsTable.id, formId))
+    .returning();
+
+  if (result.length === 0) {
+    throw new Error(
+      "Something went wrong while updating the form"
+    );
+  }
+
+  return result[0];
+}
+
+public async deleteForms(
+  payload: DeleteFormInputType,
+  userId: string
+) {
+  const { formId } = await deleteFormInput.parseAsync(payload);
+
+  // Verify that the exact form exists and belongs to the logged-in user
+  const verifiedForm = await db
+    .select({
+      formId: formsTable.id,
+    })
+    .from(formsTable)
+    .where(
+      and(
+        eq(formsTable.id, formId),
+        eq(formsTable.createdBy, userId)
+      )
+    );
+
+  if (verifiedForm.length === 0) {
+    throw new Error(
+      "Form not found or you are not authorized to delete it"
+    );
+  }
+
+  const [deletedForm] = await db
+    .delete(formsTable)
+    .where(eq(formsTable.id, formId))
+    .returning();
+
+  if (!deletedForm) {
+    throw new Error("Failed to delete form");
+  }
+console.log("deletedform" , deletedForm)
+  return deletedForm;
+}
 
 }

@@ -7,7 +7,11 @@ import { createFormInputModel ,
   listFormInputModel, 
   listFormOutputModel,
   getFormWithFieldInputModel,
-  getFormWithFieldOutputModel } from "./model"
+  getFormWithFieldOutputModel, 
+  updateFormInput,
+  updateFormOutput,
+  deleteFormInput,
+  deleteFormOutput} from "./model"
 
 const TAGS = ["Form"]
 const getPath = generatePath("/form")
@@ -83,7 +87,51 @@ export const formRouter = router({
                  return form
               }
              
-            )
+            ),
+
+      
+          updateForms : authenticatedProcedure
+              .meta({
+                openapi:{
+                  method : "PATCH",
+                  path: getPath("/updateForm"),
+                  tags : TAGS
+                }
+              })
+              .input(updateFormInput)
+              .output(updateFormOutput)
+              .mutation(
+                async (
+                  {input ,ctx}
+                ) => {
+                  const result = await formService.updateForms(input,ctx.user.id)
+
+                  if(!result){
+                    throw new Error ("failed to update form")
+                  }
+
+                  return result
+                }
+              ),
+
+        
+      deleteForms: authenticatedProcedure
+  .meta({
+    openapi: {
+      method: "DELETE",
+      path: getPath("/deleteForm"),
+      tags: TAGS,
+    },
+  })
+  .input(deleteFormInput)
+  .output(deleteFormOutput)
+  .mutation(({ input, ctx }) => {
+    return formService.deleteForms(
+      input,
+      ctx.user.id
+    );
+  }),
+
 
 
           

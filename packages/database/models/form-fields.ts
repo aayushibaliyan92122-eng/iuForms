@@ -25,7 +25,12 @@ export const fieldTypeEnum = pgEnum("field_Type_Enum", [
 ])
 export const formFieldsTable = pgTable("form_fields" ,{
     id : uuid("id").primaryKey().defaultRandom(),
-    formId: uuid("form_id").references(()=> formsTable.id),
+    formId: uuid("form_id").references(
+  () => formsTable.id,
+  {
+    onDelete: "cascade",
+  }
+),
 
     label  : varchar("label" , {length:100}).notNull(),
     labelKey : varchar("label_key" ,{length:100}).notNull(),

@@ -14,3 +14,25 @@ export const listFormByUserIdInput = z.object({
 })
 
 export type ListFormByUserIdInputType = z.infer<typeof listFormByUserIdInput>
+
+
+export const updateFormInput = z.object({
+     title : z.string().min(1).max(30).describe("title of the form").optional(),
+    description: z.string().max(300).describe("description of the form").optional(),
+    formId :z.uuid().describe("id of the form to update")
+}).refine((data)=>
+    data.title !== undefined ||
+    data.description !== undefined 
+    ,{
+        message : "atleast one field must be provided for update."
+    }
+    
+)
+
+export  type UpdateFormInputType = z.infer<typeof updateFormInput>
+
+export const deleteFormInput = z.object({
+  formId : z.uuid().describe("uuid of the Form to delete")
+})
+
+export type DeleteFormInputType = z.infer<typeof deleteFormInput>

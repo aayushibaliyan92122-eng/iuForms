@@ -30,5 +30,11 @@ export const getLoggedInUserInfoInputModel = z.undefined()
 export const getLoggedInUserInfoOutputModel = z.object({
     id: z.string().describe("ID of the user"),
     fullName: z.string().describe("Name of the user"),
-    email : z.string().describe("email id of the user")
+    email : z.string().describe("email id of the user"),
+    createdAt: z.string().nullable().optional().describe("Account creation timestamp"),
 })
+
+export const signOutUserInputModel = z.undefined();
+export const signOutUserOutputModel = z.object({
+  success: z.boolean(),
+});

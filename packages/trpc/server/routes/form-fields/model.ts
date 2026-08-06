@@ -45,3 +45,75 @@ export const getFieldsOutputModel = z.array(fieldsOutputModel);
 
 export type GetFieldsInputModelType = z.infer<typeof getFieldsInputModel>
 export type GetFieldsOutputModelType = z.infer<typeof getFieldsOutputModel>
+
+
+export const updateFieldInput = z.object({
+  fieldId: z.uuid().describe("uuid of the field to update"),
+
+  label: z.string().min(1).optional().describe("Updated display label for the field"),
+  description: z.string().optional(),
+  placeholder: z.string().optional(),
+
+  type: fieldTypeEnum
+    .optional(),
+
+  isRequired: z.boolean().optional(),
+});
+
+export const updateFieldOutput = z.object({
+    id: z.uuid(),
+
+    formId: z.uuid(),
+
+    label: z.string(),
+
+    labelKey: z.string(),
+
+    description: z.string().nullable(),
+
+    placeholder: z.string().nullable(),
+
+    isRequired: z.boolean(),
+
+    index: z.string(),
+
+    type: fieldTypeEnum,
+
+    createdAt: z.date(),
+
+    updatedAt: z.date(),
+});
+
+export type UpdateFieldInputType = z.infer<typeof updateFieldInput>
+
+export type UpdateFieldOutputType = z.infer<typeof updateFieldOutput>
+
+
+export const deleteFieldInput = z.object({
+    fieldId : z.uuid().describe("uuid of the field to delete")
+})
+
+
+export const deleteFieldOutput = z.object({
+  id: z.uuid(),
+
+  formId: z.uuid().nullable(),
+
+  label: z.string(),
+
+  labelKey: z.string(),
+
+  description: z.string().nullable(),
+
+  placeholder: z.string().nullable(),
+
+  isRequired: z.boolean(),
+
+  index: z.string(),
+
+  type: fieldTypeEnum,
+
+  createdAt: z.date().nullable(),
+
+  updatedAt: z.date().nullable(),
+});

@@ -13,8 +13,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Streamyst",
-  description: "Media Forwarding",
+  title: "IuForms",
+  description: "Build and share forms with IuForms.",
 };
 
 export default function RootLayout({

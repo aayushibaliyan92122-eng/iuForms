@@ -74,14 +74,44 @@ export function useUser() {
         status,
     } = trpc.auth.getLoggedInUserInfo.useQuery();
 
-    
-
     return {
         user,
         error,
         isFetched,
         isFetching,
         isLoading,
+        status,
+    };
+}
+
+export function useSignOut() {
+    const utils = trpc.useUtils();
+
+    const {
+        mutateAsync: signOutAsync,
+        mutate: signOut,
+        error,
+        failureCount,
+        isError,
+        isIdle,
+        isSuccess,
+        isPending,
+        status,
+    } = trpc.auth.signOutUser.useMutation({
+        onSuccess: async () => {
+            await utils.auth.getLoggedInUserInfo.invalidate();
+        },
+    });
+
+    return {
+        signOutAsync,
+        signOut,
+        error,
+        failureCount,
+        isError,
+        isIdle,
+        isSuccess,
+        isPending,
         status,
     };
 }

@@ -35,3 +35,55 @@ export const getFormWithFieldOutputModel = z.object({
     updatedAt : z.string().nullable(),
     fields : z.array(fieldsOutputModel)
 })
+
+export const updateFormInput = z.object({
+  formId: z.uuid().describe("ID of the form"),
+
+  title: z
+    .string()
+    .min(1)
+    .max(30)
+    .describe("Title of the form")
+    .optional(),
+
+  description: z
+    .string()
+    .max(300)
+    
+    .describe("Description of the form")
+    .optional(),
+});
+
+export const updateFormOutput = z.object({
+  id: z.uuid(),
+
+  title: z.string(),
+
+  description: z.string().nullable(),
+
+  createdBy: z.uuid().nullable(),
+
+  createdAt: z.date().nullable(),
+
+  updatedAt: z.date().nullable(),
+});
+
+
+
+export const deleteFormInput = z.object({
+    formId : z.uuid().describe("uuid of the field to delete")
+})
+
+export const deleteFormOutput = z.object({
+  id: z.uuid(),
+
+  title: z.string(),
+
+  description: z.string().nullable(),
+
+  createdBy: z.uuid().nullable(),
+
+  createdAt: z.date().nullable(),
+
+  updatedAt: z.date().nullable(),
+})
