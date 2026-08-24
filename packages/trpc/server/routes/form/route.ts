@@ -11,7 +11,9 @@ import { createFormInputModel ,
   updateFormInput,
   updateFormOutput,
   deleteFormInput,
-  deleteFormOutput} from "./model"
+  deleteFormOutput,
+  updateformStatusInput,
+  updateFormStatusOutput} from "./model"
 
 const TAGS = ["Form"]
 const getPath = generatePath("/form")
@@ -132,7 +134,28 @@ export const formRouter = router({
     );
   }),
 
+  updateFormStatus : authenticatedProcedure
+    .meta({
+      openapi:{
+        method : "PATCH",
+        path : getPath("/updateStatus"),
+        tags : TAGS,
+      },
+    })
+    .input(updateformStatusInput)
+    .output(updateFormStatusOutput)
+    .mutation(async ({ input, ctx }) => {
+  const result = await formService.updateFormStatus(
+    input,
+    ctx.user.id
+  );
 
+  console.log("STATUS RESULT:", result);
+
+  return result;
+})
+   
+  
 
           
 })

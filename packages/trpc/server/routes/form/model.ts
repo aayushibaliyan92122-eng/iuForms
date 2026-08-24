@@ -18,7 +18,8 @@ export const listFormOutputModel = z.array(
     title: z.string().describe("title of the form"),
     description : z.string().nullable().optional().describe("description of the user"),
     createdAt : z.date().nullable().describe("Creation timestamp"),
-    updatedAt: z.date().nullable().describe("last updated timestamp")
+    updatedAt: z.date().nullable().describe("last updated timestamp"),
+    status : z.string().describe("status of the form")
 })
 )
 
@@ -68,7 +69,30 @@ export const updateFormOutput = z.object({
   updatedAt: z.date().nullable(),
 });
 
+export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED"])
 
+export const updateformStatusInput = z.object({
+    formId : z.uuid().describe("id of the form"),
+    status : updateFormStatusEnum.describe("status of the form")
+})
+
+export const updateFormStatusOutput = z.object({
+     id: z.uuid(),
+
+  title: z.string(),
+
+  description: z.string().nullable(),
+
+  status : z.string(),
+
+  createdBy: z.uuid().nullable(),
+
+  createdAt: z.date().nullable(),
+
+  updatedAt: z.date().nullable(),
+})
+
+export type UpdateFormStatusOutput = z.infer<typeof updateFormStatusOutput>
 
 export const deleteFormInput = z.object({
     formId : z.uuid().describe("uuid of the field to delete")

@@ -148,3 +148,40 @@ export const useDeleteForm = () => {
     status,
   };
 };
+
+export const useUpdateFormStatus = (formId: string ) => {
+  const utils = trpc.useUtils();
+
+  const {
+    mutateAsync: updateFormStatusAsync,
+    mutate: updateFormStatus,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isPending,
+    isSuccess,
+    status,
+  } = trpc.form.updateFormStatus.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        utils.form.listForms.invalidate(),
+        utils.form.getFormWithFields.invalidate({
+          id: formId,
+        }),
+      ]);
+    },
+  });
+
+  return {
+    updateFormStatusAsync,
+    updateFormStatus,
+    error,
+    failureCount,
+    isError,
+    isIdle,
+    isPending,
+    isSuccess,
+    status,
+  };
+};

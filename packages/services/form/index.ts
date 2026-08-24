@@ -3,7 +3,7 @@ import { formsTable } from "@repo/database/models/form";
 import { fieldTypeEnum, formFieldsTable } from "@repo/database/models/form-fields";
 import { formSubmissionTable } from "@repo/database/models/form-submission";
 
-import { createFormInput, CreateFormInputType, listFormByUserIdInput, ListFormByUserIdInputType, UpdateFormInputType, updateFormInput,deleteFormInput,DeleteFormInputType } from "./model";
+import { createFormInput, CreateFormInputType, listFormByUserIdInput, ListFormByUserIdInputType, UpdateFormInputType, updateFormInput,deleteFormInput,DeleteFormInputType, UpdateFormStatusInputType, updateformStatusInput } from "./model";
 import { formatError } from "zod";
 import { userTable } from "@repo/database/models/user";
 
@@ -46,6 +46,7 @@ export default class FormService{
           id: formsTable.id,
           title : formsTable.title,
           description : formsTable.description,
+          status : formsTable.status,
           createdAt : formsTable.createdAt,
           updatedAt :formsTable.updatedAt
         })
@@ -139,7 +140,10 @@ export default class FormService{
             })
             .from(formsTable)
             .leftJoin(formFieldsTable, eq(formFieldsTable.formId, formsTable.id))
-            .where(eq(formsTable.id, formId))
+            .where(and
+               (eq(formsTable.id, formId),
+                eq(formsTable.status , "PUBLISHED")
+              ))
             .orderBy(formFieldsTable.index);
 
         /*
@@ -297,5 +301,73 @@ public async deleteForms(
 console.log("deletedform" , deletedForm)
   return deletedForm;
 }
+
+
+public async updateFormStatus(payload : UpdateFormStatusInputType , userId : string){
+
+const {formId,status} = await updateformStatusInput.parseAsync(payload)
+
+ 
+
+const authenticatedForm = await db
+          .select({id : formsTable.id})
+          .from(formsTable)
+          .where(
+            and (
+              eq(formsTable.id , formId),
+              eq(formsTable.createdBy , userId)
+            ))
+
+
+if(authenticatedForm.length===0){
+  throw new Error("Form not found or you are not authorized to update it")
+}
+
+// If the user is trying to publish the form,
+// make sure the form has at least one field.
+if(status === "PUBLISHED"){
+  const fields = await db
+  .select({ id: formFieldsTable.id })
+  .from(formFieldsTable)
+  .where(eq(formFieldsTable.formId, formId))
+  .limit(1);
+
+  if(fields.length===0){
+    throw new Error("add atleast one field before publishing")
+  }
+  
+}
+// We only need this check for PUBLISHED.
+// Changing a form back to DRAFT does not require any field check.
+
+// Find at least one field that belongs to this form.
+
+// If no field exists,
+// do not allow the form to be published.
+
+// If at least one field exists,
+// continue and update the form status.
+      
+const [updatedForm] = await db
+  .update(formsTable)
+  .set({ status })
+  .where(
+    and(
+      eq(formsTable.id, formId),
+      eq(formsTable.createdBy, userId)
+    )
+  )
+  .returning();
+
+console.log("UPDATED FORM:", updatedForm);
+
+
+if (!updatedForm) {
+  throw new Error("failed to update form status");
+}
+
+return updatedForm;
+}
+
 
 }

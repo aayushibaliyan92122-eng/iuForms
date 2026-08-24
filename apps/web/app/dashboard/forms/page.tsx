@@ -8,7 +8,7 @@ import {Check,
   Copy,
   ExternalLink, Eye, PencilLine, Share2 } from "lucide-react";
 
-import { useCreateForm, useListForms ,useUpdateForm , useDeleteForm } from "~/hooks/api/form";
+import { useCreateForm, useListForms ,useUpdateForm , useDeleteForm , useUpdateFormStatus } from "~/hooks/api/form";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -131,6 +131,7 @@ useEffect(() => {
 
 const sharingForm = forms?.find(
   (form) => form.id === shareFormId
+  
 );
 
 const publicFormUrl =
@@ -160,6 +161,39 @@ const handleOpenPublicForm = () => {
   );
 };
 
+
+//here status code
+const {
+  updateFormStatusAsync,
+  isPending: isUpdatingFormStatus,
+  error: updateFormStatusError,
+} = useUpdateFormStatus(shareFormId ?? "");
+
+const handlePublishForm = async () => {
+  if (!shareFormId) return;
+
+  try {
+    await updateFormStatusAsync({
+      formId: shareFormId,
+      status: "PUBLISHED",
+    });
+  } catch {
+    // The mutation error is available in updateFormStatusError.
+  }
+};
+
+const handleDraftForm = async () => {
+  if (!shareFormId) return;
+
+  try {
+    await updateFormStatusAsync({
+      formId: shareFormId,
+      status: "DRAFT",
+    });
+  } catch {
+    // The mutation error is available in updateFormStatusError.
+  }
+};
 
     return (
         <main className="min-h-screen bg-black px-6 py-6 text-white">
@@ -468,11 +502,10 @@ const handleOpenPublicForm = () => {
 </Dialog>
 
 
-
 <Dialog
   open={shareFormId !== null}
   onOpenChange={(isOpen) => {
-    if (!isOpen) {
+    if (!isOpen && !isUpdatingFormStatus) {
       setShareFormId(null);
       setCopied(false);
     }
@@ -483,70 +516,137 @@ const handleOpenPublicForm = () => {
       <DialogTitle>Share Form</DialogTitle>
 
       <DialogDescription className="text-white/60">
-        Anyone with this link can open and submit
-        {sharingForm
-          ? ` "${sharingForm.title}"`
-          : " this form"}
-        .
+        {sharingForm?.status === "PUBLISHED"
+          ? `Anyone with this link can open and submit "${
+              sharingForm.title
+            }".`
+          : `"${sharingForm?.title ?? "This form"}" is currently a draft.`}
       </DialogDescription>
     </DialogHeader>
 
-    <div className="space-y-2">
-      <label
-        htmlFor="public-form-url"
-        className="text-sm text-white/70"
-      >
-        Public form link
-      </label>
+    <p className="text-sm text-white/60">
+      Status: {sharingForm?.status ?? "Loading..."}
+    </p>
 
-      <div className="flex gap-2">
-        <Input
-          id="public-form-url"
-          value={publicFormUrl}
-          readOnly
-          className="border-white/10 bg-white/5 text-white"
-        />
+    {sharingForm?.status === "PUBLISHED" ? (
+      <>
+        {/* Sharing link section */}
+        <div className="space-y-2">
+          <label
+            htmlFor="public-form-url"
+            className="text-sm text-white/70"
+          >
+            Public form link
+          </label>
 
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!publicFormUrl}
-          onClick={handleCopyFormLink}
-          className="shrink-0 border-white/10 bg-white/5 text-white hover:bg-white/10"
-        >
-          {copied ? (
-            <Check className="mr-2 size-4" />
-          ) : (
-            <Copy className="mr-2 size-4" />
-          )}
+          <div className="flex gap-2">
+            <Input
+              id="public-form-url"
+              value={publicFormUrl}
+              readOnly
+              className="border-white/10 bg-white/5 text-white"
+            />
 
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
-    </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!publicFormUrl}
+              onClick={handleCopyFormLink}
+              className="shrink-0 border-white/10 bg-white/5 text-white hover:bg-white/10"
+            >
+              {copied ? (
+                <Check className="mr-2 size-4" />
+              ) : (
+                <Copy className="mr-2 size-4" />
+              )}
 
-    <DialogFooter>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => {
-          setShareFormId(null);
-          setCopied(false);
-        }}
-      >
-        Close
-      </Button>
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
 
-      <Button
-        type="button"
-        disabled={!publicFormUrl}
-        onClick={handleOpenPublicForm}
-        className="bg-white text-black hover:bg-white/90"
-      >
-        <ExternalLink className="mr-2 size-4" />
-        Open Form
-      </Button>
-    </DialogFooter>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setShareFormId(null);
+              setCopied(false);
+            }}
+          >
+            Close
+          </Button>
+
+          <Button
+            type="button"
+            disabled={!publicFormUrl}
+            onClick={handleOpenPublicForm}
+            className="bg-white text-black hover:bg-white/90"
+          >
+            <ExternalLink className="mr-2 size-4" />
+            Open Form
+          </Button>
+
+
+   <Button
+            type="button"
+            disabled={
+              isUpdatingFormStatus ||
+              !shareFormId
+            }
+            onClick={handleDraftForm}
+            className="bg-white text-black hover:bg-white/90"
+          >
+            {isUpdatingFormStatus
+              ? "UnPublishing..."
+              : "Draft Form"}
+    </Button>
+        </DialogFooter>
+      </>
+    ) : (
+      <>
+        {/* Draft form section */}
+        <div className="rounded-md border border-white/10 bg-white/5 p-4">
+          <p className="text-sm text-white/70">
+            Publish this form before sharing it and accepting responses.
+          </p>
+        </div>
+
+        {updateFormStatusError ? (
+          <p className="text-sm text-red-400">
+            {updateFormStatusError.message}
+          </p>
+        ) : null}
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isUpdatingFormStatus}
+            onClick={() => {
+              setShareFormId(null);
+              setCopied(false);
+            }}
+          >
+            Close
+          </Button>
+
+          <Button
+            type="button"
+            disabled={
+              isUpdatingFormStatus ||
+              !shareFormId
+            }
+            onClick={handlePublishForm}
+            className="bg-white text-black hover:bg-white/90"
+          >
+            {isUpdatingFormStatus
+              ? "Publishing..."
+              : "Publish Form"}
+          </Button>
+        </DialogFooter>
+      </>
+    )}
   </DialogContent>
 </Dialog>
         </main>

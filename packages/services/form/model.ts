@@ -1,5 +1,15 @@
 import {uuid, z} from "zod"
 
+
+export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED"])
+
+export const updateformStatusInput = z.object({
+    formId : z.uuid().describe("id of the form"),
+    status : updateFormStatusEnum.describe("status of the form")
+})
+
+export type UpdateFormStatusInputType = z.infer<typeof updateformStatusInput>
+
 export const createFormInput = z.object({
     title : z.string().max(30).describe("title of the form"),
     description: z.string().max(300).describe("description of the form").optional(),
@@ -36,3 +46,4 @@ export const deleteFormInput = z.object({
 })
 
 export type DeleteFormInputType = z.infer<typeof deleteFormInput>
+

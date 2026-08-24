@@ -71,6 +71,13 @@
       "when": 1785569277766,
       "tag": "0009_mature_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785984927210,
+      "tag": "0010_classy_the_renegades",
+      "breakpoints": true
     }
   ]
 }
