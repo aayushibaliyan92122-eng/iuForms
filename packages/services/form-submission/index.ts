@@ -3,7 +3,7 @@ import {formSubmissionTable} from "@repo/database/models/form-submission"
 import {createSubmissionInput , CreateSubmissionInputType} from "./model"
 import { formsTable } from "@repo/database/models/form"
 import { formFieldsTable } from "@repo/database/models/form-fields"
-
+import {z} from "zod"
 export default class FormSubmissionService{
     public async createSubmission(payload : CreateSubmissionInputType){
         const {formId , values} = await createSubmissionInput.parseAsync(payload)
@@ -26,7 +26,8 @@ export default class FormSubmissionService{
            const formFields = await db
   .select({
     id: formFieldsTable.id,
-    isRequired : formFieldsTable.isRequired
+    isRequired : formFieldsTable.isRequired,
+    type : formFieldsTable.type
   })
   .from(formFieldsTable)
   .where(
@@ -50,13 +51,90 @@ export default class FormSubmissionService{
       return true;
     }
 
+for (const submittedValue of values) {
+  const realField = formFields.find(
+    (field) => field.id === submittedValue.fieldId
+  );
+
+  // Safety check.
+  // Normally this should already be guaranteed by areFieldsValid.
+  if (!realField) {
+    throw new Error("Submitted field does not belong to this form");
+  }
+
+  const value = submittedValue.value.trim();
+
+  switch (realField.type) {
+    case "EMAIL": {
+      const emailResult = z
+        .email()
+        .safeParse(value);
+
+      if (!emailResult.success) {
+        throw new Error("Please enter a valid email");
+      }
+
+      break;
+    }
+
+    case "NUMBER": {
+      // "" would otherwise become 0 with Number("")
+      if (
+        value === "" ||
+        !Number.isFinite(Number(value))
+      ) {
+        throw new Error("Please enter a valid number");
+      }
+
+      break;
+    }
+
+    case "YES_NO": {
+      // Assuming your frontend sends "YES" or "NO"
+      if (
+        value !== "YES" &&
+        value !== "NO"
+      ) {
+        throw new Error(
+          "Please select either YES or NO"
+        );
+      }
+
+      break;
+    }
+
+    case "TEXT": {
+      // No additional type validation needed.
+      // createSubmissionInput already guarantees
+      // that value is a string.
+      break;
+    }
+
+    case "PASSWORD": {
+      // For now it is also simply a string.
+      // We can add password rules later if your
+      // form builder supports min length etc.
+      break;
+    }
+
+    default: {
+      throw new Error("Unsupported field type");
+    }
+  }
+}
+
     // Required field?
     // Check whether the submitted values contain this field.
     return values.some(
       (submittedValue) =>
-        submittedValue.fieldId === realField.id
+        submittedValue.fieldId === realField.id &&( submittedValue.value.trim() !== "")
+
+
+
+  
     );
   }
+  
 );
 
 if (!areRequiredFieldsPresent) {
