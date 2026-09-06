@@ -1,0 +1,1 @@
+ALTER TYPE "public"."forms_status_enum" ADD VALUE 'CLOSED';

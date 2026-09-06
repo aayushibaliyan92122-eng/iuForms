@@ -32,6 +32,7 @@ export const getFormWithFieldOutputModel = z.object({
     id :z.string(),
     title : z.string(),
     description  :z.string().nullable(),
+    status : z.enum(["DRAFT" , "PUBLISHED" ,"CLOSED"]),
     createdAt : z.string().nullable(),
     updatedAt : z.string().nullable(),
     fields : z.array(fieldsOutputModel)
@@ -69,7 +70,7 @@ export const updateFormOutput = z.object({
   updatedAt: z.date().nullable(),
 });
 
-export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED"])
+export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED","CLOSED"])
 
 export const updateformStatusInput = z.object({
     formId : z.uuid().describe("id of the form"),

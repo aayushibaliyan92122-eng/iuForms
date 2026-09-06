@@ -1,7 +1,7 @@
 import {uuid, z} from "zod"
 
 
-export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED"])
+export const updateFormStatusEnum = z.enum(["DRAFT" , "PUBLISHED","CLOSED"])
 
 export const updateformStatusInput = z.object({
     formId : z.uuid().describe("id of the form"),

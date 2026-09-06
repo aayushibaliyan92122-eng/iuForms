@@ -1,4 +1,4 @@
-import { db, eq, count, countDistinct, desc ,and } from "@repo/database";
+import { db, eq, count, countDistinct, desc ,and ,or } from "@repo/database";
 import { formsTable } from "@repo/database/models/form";
 import { fieldTypeEnum, formFieldsTable } from "@repo/database/models/form-fields";
 import { formSubmissionTable } from "@repo/database/models/form-submission";
@@ -123,6 +123,7 @@ export default class FormService{
                 id: formsTable.id,
                 title: formsTable.title,
                 description: formsTable.description,
+                status : formsTable.status,
                 createdAt: formsTable.createdAt,
                 updatedAt: formsTable.updatedAt,
 
@@ -142,7 +143,12 @@ export default class FormService{
             .leftJoin(formFieldsTable, eq(formFieldsTable.formId, formsTable.id))
             .where(and
                (eq(formsTable.id, formId),
-                eq(formsTable.status , "PUBLISHED")
+               or( 
+                eq(formsTable.status , "PUBLISHED"),
+                eq(formsTable.status , "CLOSED")
+              
+              )
+               
               ))
             .orderBy(formFieldsTable.index);
 
@@ -159,6 +165,7 @@ export default class FormService{
         const form = {
             id: first.id,
             title: first.title,
+            status : first.status,
             description: first.description ?? null,
             createdAt: first.createdAt ? first.createdAt.toISOString() : null,
             updatedAt: first.updatedAt ? first.updatedAt.toISOString() : null,

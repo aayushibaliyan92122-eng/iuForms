@@ -2,7 +2,7 @@ import { pgTable, uuid, timestamp, varchar, pgEnum } from "drizzle-orm/pg-core";
 import { userTable } from "./user";
 
 
-export const formStatusEnum = pgEnum("forms_status_enum" , ["DRAFT" , "PUBLISHED"])
+export const formStatusEnum = pgEnum("forms_status_enum" , ["DRAFT" , "PUBLISHED","CLOSED"])
 
 export const formsTable = pgTable("forms", {
   id:uuid().primaryKey().defaultRandom(),

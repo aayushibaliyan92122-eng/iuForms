@@ -195,6 +195,19 @@ const handleDraftForm = async () => {
   }
 };
 
+const handleCloseForm = async () => {
+  if (!shareFormId) return;
+
+  try {
+    await updateFormStatusAsync({
+      formId: shareFormId,
+      status: "CLOSED",
+    });
+  } catch {
+    // Error updateFormStatusError me available hai.
+  }
+};
+
     return (
         <main className="min-h-screen bg-black px-6 py-6 text-white">
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
@@ -601,9 +614,57 @@ const handleDraftForm = async () => {
               ? "UnPublishing..."
               : "Draft Form"}
     </Button>
+
+
+    <Button
+  type="button"
+  disabled={isUpdatingFormStatus || !shareFormId}
+  onClick={handleCloseForm}
+>
+  {isUpdatingFormStatus
+    ? "Closing..."
+    : "Close Form"}
+</Button>
         </DialogFooter>
       </>
-    ) : (
+    
+    
+ 
+) : sharingForm?.status === "CLOSED" ? (
+  <>
+    <div className="rounded-md border border-white/10 bg-white/5 p-4">
+      <p className="text-sm text-white/70">
+        This form is closed and is not accepting responses.
+      </p>
+    </div>
+
+    <DialogFooter>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isUpdatingFormStatus}
+        onClick={handleDraftForm}
+      >
+        Move to Draft
+      </Button>
+
+      <Button
+        type="button"
+        disabled={isUpdatingFormStatus || !shareFormId}
+        onClick={handlePublishForm}
+      >
+        {isUpdatingFormStatus
+          ? "Publishing..."
+          : "Publish Again"}
+      </Button>
+    </DialogFooter>
+  </>
+) 
+    
+    
+    
+    
+    : (
       <>
         {/* Draft form section */}
         <div className="rounded-md border border-white/10 bg-white/5 p-4">

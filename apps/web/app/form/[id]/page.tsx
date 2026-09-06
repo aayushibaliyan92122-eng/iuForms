@@ -50,6 +50,21 @@ export default function PublicFormPage() {
     if (isLoading) return <div className="p-6">Loading form…</div>;
     if (!form) return <div className="p-6">Form not found.</div>;
 
+    if (form.status === "CLOSED") {
+  return (
+    <main className="min-h-screen bg-black text-white px-6 py-6">
+      <div className="mx-auto max-w-2xl">
+        <h1 className="text-2xl font-semibold mb-2">
+          {form.title}
+        </h1>
+
+        <p className="text-white/60">
+          This form is no longer accepting responses.
+        </p>
+      </div>
+    </main>
+  );
+}
     return (
         <main className="min-h-screen bg-black text-white px-6 py-6">
             <div className="mx-auto max-w-2xl">
@@ -108,8 +123,8 @@ export default function PublicFormPage() {
                                     className="w-full rounded-md border bg-transparent px-3 py-2 text-sm text-white"
                                 >
                                     <option value="">Select...</option>
-                                    <option value="true">Yes</option>
-                                    <option value="false">No</option>
+                                    <option value="YES">Yes</option>
+                                    <option value="NO">No</option>
                                 </select>
                             )}
 
@@ -133,5 +148,5 @@ export default function PublicFormPage() {
                 </form>
             </div>
         </main>
-    );
-}
+    );}
+
