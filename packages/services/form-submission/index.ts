@@ -43,13 +43,10 @@ export default class FormSubmissionService{
     )
 )
 
+if(!areFieldsValid){
+    throw new Error("these fields not match to the fields this form have")
+}
 
- const areRequiredFieldsPresent = formFields.every(
-  (realField) => {
-    // Optional field? It does not need to be submitted.
-    if (!realField.isRequired) {
-      return true;
-    }
 
 for (const submittedValue of values) {
   const realField = formFields.find(
@@ -62,7 +59,12 @@ for (const submittedValue of values) {
     throw new Error("Submitted field does not belong to this form");
   }
 
+
   const value = submittedValue.value.trim();
+
+  if (!realField.isRequired && value === "") {
+  continue;
+}
 
   switch (realField.type) {
     case "EMAIL": {
@@ -123,6 +125,16 @@ for (const submittedValue of values) {
   }
 }
 
+ const areRequiredFieldsPresent = formFields.every(
+  (realField) => {
+    // Optional field? It does not need to be submitted.
+    if (!realField.isRequired) {
+      return true;
+    }
+
+
+
+
     // Required field?
     // Check whether the submitted values contain this field.
     return values.some(
@@ -140,11 +152,10 @@ for (const submittedValue of values) {
 if (!areRequiredFieldsPresent) {
   throw new Error("Please fill all required fields");
 }
+
  
 
-if(!areFieldsValid){
-    throw new Error("these fields not match to the fields this form have")
-}
+
 
         const result = await db
                 .insert(formSubmissionTable)
