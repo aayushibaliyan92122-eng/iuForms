@@ -1,5 +1,4 @@
 import {z} from "zod"
-0
 
 
 export const fieldTypeEnum = z.enum(["TEXT" ,"EMAIL" , "PASSWORD" , "NUMBER" , "YES_NO"])
