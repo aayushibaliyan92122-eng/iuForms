@@ -186,7 +186,27 @@ if (!areRequiredFieldsPresent) {
             }
    }
 
-   public async getSubmissionByFormId(formId: string){
+   public async getSubmissionByFormId(formId: string , userId : string){
+
+
+     const ownedForm = await db
+    .select({
+      id: formsTable.id,
+    })
+    .from(formsTable)
+    .where(
+      and(
+        eq(formsTable.id, formId),
+        eq(formsTable.createdBy, userId)
+      )
+    );
+
+  if (ownedForm.length === 0) {
+    throw new Error(
+    "Form not found or you are not authorized to view submissions"
+    );
+  }
+
     const rows = await db
                 .select({
                     id : formSubmissionTable.id,
@@ -196,7 +216,11 @@ if (!areRequiredFieldsPresent) {
                     updatedAt : formSubmissionTable.updatedAt
                 })
                 .from(formSubmissionTable)
-                .where(eq(formSubmissionTable.formId , formId))
+                .where(
+                  
+                    eq(formSubmissionTable.formId , formId)
+
+                  )
                 .orderBy(formSubmissionTable.createdAt)
 
     return rows.map((r)=>({

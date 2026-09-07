@@ -27,7 +27,13 @@ export default function FormSubmissions() {
     const loading = subsLoading || fieldsLoading;
 
     if (loading) return <div className="p-6">Loading submissions…</div>;
-    if (error) return <div className="p-6 text-red-400">Error loading submissions</div>;
+if (error) {
+  return (
+    <div className="p-6 text-red-400">
+      Form not found or you are not authorized to view submissions
+    </div>
+  );
+}
 
     return (
         <main className="min-h-screen bg-slate-50 p-6">

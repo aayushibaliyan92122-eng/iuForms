@@ -45,9 +45,9 @@ export const formSubmissionRouter = router(
                                 })
                                 .input(getSubmissionInputModel)
                                 .output(getSubmissionOutputModel)
-                                .query(async ({input}) => {
-                                    const {formId} = input
-                                    const result = await formSubmissionService.getSubmissionByFormId(formId)
+                                .query(async ({input , ctx}) => {
+                                    const {formId } = input
+                                    const result = await formSubmissionService.getSubmissionByFormId(formId , ctx.user.id)
                                     return result
                                 })
     }
