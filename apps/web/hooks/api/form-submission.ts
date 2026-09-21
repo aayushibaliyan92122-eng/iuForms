@@ -24,6 +24,38 @@ export const useCreateSubmission = () => {
     };
 };
 
+export const useDeleteSubmission = (formId : string)=>{
+    const utils= trpc.useUtils()
+
+    const {
+        mutateAsync: deleteSubmissionAsync,
+        mutate: deleteSubmission,
+        error,
+        failureCount,
+        isError,
+        isIdle,
+        isPending,
+        isSuccess,
+        status,
+      } = trpc.formSubmission.deleteSubmission.useMutation({
+        onSuccess: async () => {
+          await utils.formSubmission.getSubmission.invalidate({formId});
+        },
+      });
+    
+      return {
+        deleteSubmissionAsync,
+        deleteSubmission,
+        error,
+        failureCount,
+        isError,
+        isIdle,
+        isPending,
+        isSuccess,
+        status,
+      };
+}
+
 export const useGetSubmissionsByFormId = (formId: string) => {
     const {
         data: submissions,

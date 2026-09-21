@@ -1,10 +1,9 @@
 // apps/web/app/form/[id]/submissions/page.tsx
 
 "use client";
-
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useGetSubmissionsByFormId } from "~/hooks/api/form-submission";
+import { useGetSubmissionsByFormId , useDeleteSubmission } from "~/hooks/api/form-submission";
 import { useGetFields } from "~/hooks/api/form-field";
 
 type Submission = {
@@ -19,8 +18,22 @@ export default function FormSubmissions() {
     const params = useParams();
     const formId = params?.id as string | undefined;
 
+    //deleteone
+
+const {
+  deleteSubmissionAsync,
+  isPending: isDeletingSubmission,
+  error: deleteSubmissionError,
+} = useDeleteSubmission(formId ?? "");
+
+
+
+
     const { submissions, isLoading: subsLoading, error } = useGetSubmissionsByFormId(formId ?? "");
     const { fields, isLoading: fieldsLoading } = useGetFields(formId ?? "");
+
+    
+   
 
     const rows = useMemo(() => (submissions ?? []) as Submission[], [submissions]);
 
@@ -34,6 +47,8 @@ if (error) {
     </div>
   );
 }
+
+
 
     return (
         <main className="min-h-screen bg-slate-50 p-6">
@@ -58,6 +73,7 @@ if (error) {
                                 <tr>
                                     <th className="px-4 py-2 w-1/6">ID</th>
                                     <th className="px-4 py-2 w-1/6">Submitted</th>
+
                                     {/** render a column per field in index order */}
                                     {(fields ?? [])
                                         .slice()
@@ -67,6 +83,9 @@ if (error) {
                                                 {f.label}
                                             </th>
                                         ))}
+  <th className="px-4 py-2 text-left text-sm">
+  Actions
+</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -97,6 +116,19 @@ if (error) {
                                                     </td>
                                                 );
                                             })}
+<td className="px-4 py-3">
+ <button
+  type="button"
+  disabled={isDeletingSubmission}
+  onClick={async () => {
+    await deleteSubmissionAsync({
+      submissionId: r.id,
+    });
+  }}
+>
+  {isDeletingSubmission ? "Deleting..." : "Delete"}
+</button>
+</td>
                                     </tr>
                                 ))}
                             </tbody>

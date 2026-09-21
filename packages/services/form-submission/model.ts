@@ -16,5 +16,18 @@ export const createSubmissionOutput = z.object({
     createdAt : z.string().nullable().describe("timestamp created")
 })
 
+export const deleteSubmissionInput = z.object({
+    submissionId : z.uuid().describe("uuid of the submission")
+})
+
+export type DeleteSubmissionInputType = z.infer<typeof deleteSubmissionInput>
+
+export const deleteSubmissionOutput = z.object({
+  id: z.uuid().describe("ID of the deleted submission"),
+});
+
+
+export type DeleteSubmissionOutputType = z.infer<typeof deleteSubmissionOutput>
+
 export type CreateSubmissionInputType = z.infer<typeof createSubmissionInput>
 export type CreateSubmissionOutputType = z.infer<typeof createSubmissionOutput>

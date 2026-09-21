@@ -1,6 +1,6 @@
 import {db , eq , and} from "@repo/database"
 import {formSubmissionTable} from "@repo/database/models/form-submission"
-import {createSubmissionInput , CreateSubmissionInputType} from "./model"
+import {createSubmissionInput , CreateSubmissionInputType, deleteSubmissionInput, DeleteSubmissionInputType} from "./model"
 import { formsTable } from "@repo/database/models/form"
 import { formFieldsTable } from "@repo/database/models/form-fields"
 import {z} from "zod"
@@ -233,4 +233,65 @@ if (!areRequiredFieldsPresent) {
 
     }))
    }
+
+
+//    deleteSubmission(submissionId, userId)
+
+// 1. submission find
+// 2. formId get
+// 3. form owner verify
+// 4. unauthorized/not found handle
+// 5. delete by submissionId
+// 6. deleted id return
+
+public async deleteSubmission(payload : DeleteSubmissionInputType , userId:string){
+    const {submissionId} = await deleteSubmissionInput.parseAsync(payload)
+
+    const submission = await db 
+        .select({formId:formSubmissionTable.formId})
+        .from(formSubmissionTable)
+        .where(eq(formSubmissionTable.id , submissionId))
+
+    if(submission.length===0){
+      throw new Error("there is no submission.")
+    }
+
+    const submissionFormId = submission[0]?.formId;
+
+if (!submissionFormId) {
+  throw new Error("Submission has no associated form");
+}
+
+    const ownedForm = await db
+  .select({
+    id: formsTable.id,
+  })
+  .from(formsTable)
+  .where(
+    and(
+      eq(formsTable.id, submissionFormId),
+      eq(formsTable.createdBy, userId)
+    )
+  );
+
+  if(!ownedForm || ownedForm.length===0){
+    throw new Error("unauthorised action")
+  }
+
+
+    const [deletedSubmission] = await db
+      .delete(formSubmissionTable)
+      .where(eq(formSubmissionTable.id, submissionId))
+      .returning({id : formSubmissionTable.id});
+  
+    if (!deletedSubmission) {
+      throw new Error("Failed to delete submission details");
+    }
+  console.log("deletedform" , deletedSubmission)
+    return deletedSubmission;
+
+
+}
+
+
 }

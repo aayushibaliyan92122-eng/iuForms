@@ -4,7 +4,8 @@ import { formSubmissionService } from "../../services";
 import {
     createSubmissionInputModel,
     createSubmissionOutputModel,
-    
+    deleteSubmissionInputModel,
+    deleteSubmissionOutputModel,
     getSubmissionInputModel,
     getSubmissionOutputModel,
   
@@ -49,9 +50,25 @@ export const formSubmissionRouter = router(
                                     const {formId } = input
                                     const result = await formSubmissionService.getSubmissionByFormId(formId , ctx.user.id)
                                     return result
-                                })
+                                }),
+
+            deleteSubmission : authenticatedProcedure
+                            .meta({
+                                openapi:{
+                                    method:"DELETE",
+                                    path: getPath("/deleteSubmission"),
+                                    tags : TAGS
+                                }
+                            })
+                            .input(deleteSubmissionInputModel)
+                            .output(deleteSubmissionOutputModel)
+                            .mutation(async ({input , ctx}) => {
+                                const result = await formSubmissionService.deleteSubmission(input , ctx.user.id)
+                return result
+                            })
     }
    
+
 )
 
 export default formSubmissionRouter

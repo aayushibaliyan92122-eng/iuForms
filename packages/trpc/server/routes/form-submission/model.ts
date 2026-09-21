@@ -35,6 +35,20 @@ export const getSubmissionOutputModel = z.array(
   })
 )
 
+export const deleteSubmissionInputModel = z.object({
+    submissionId : z.uuid().describe("uuid of the submission")
+})
+
+export type DeleteSubmissionInputModelType = z.infer<typeof deleteSubmissionInputModel>
+
+export const deleteSubmissionOutputModel = z.object({
+  id: z.uuid().describe("ID of the deleted submission"),
+});
+
+
+export type DeleteSubmissionOutputModelType = z.infer<typeof deleteSubmissionOutputModel>
+
+
 export type CreateSubmissionInputModelType = z.infer<typeof createSubmissionInputModel>
 export type CreateSubmissionOutputModelType  = z.infer<typeof createSubmissionOutputModel>
 export type GetSubmissionInputModelType = z.infer<typeof getSubmissionInputModel>
